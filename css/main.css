@@ -41,9 +41,11 @@ body {
     z-index: 10;
 }
 
-svg {
+.selected {
+    z-index: 15;
     border: 1px solid grey;
 }
+
 line {
     stroke: steelblue;
     stroke-width: 2px;
