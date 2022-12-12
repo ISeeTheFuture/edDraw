@@ -7,6 +7,11 @@ var maxMouse;
 var storedMouseX;
 var storedMouseY;
 
+var viewboxX;
+var viewboxY;
+var viewboxWidth;
+var viewboxHeight;
+
 var pathStyle = "stroke: rgb(255,0,0); stroke-width: 3; opacity: 0.5;";
 
 var lineStart;
@@ -159,7 +164,8 @@ function moveStart() {
 
     storedMouseX = d3.mouse(this)[0]; // 얕은 복사?? moveSvg에서 storeMouseX에 다시 저장 안해도 최신 마우스 좌표 값이 반영됨. 근데 밑에 resize선 안됨.
     storedMouseY = d3.mouse(this)[1];
-    d3Obj.on("mousemove", moveSvg);
+    d3Obj.on("mousemove", moveSvg)
+    .on("mouseup", moveEnd);
 }
 
 function moveSvg() {
@@ -176,7 +182,7 @@ function moveSvg() {
 }
 
 function moveEnd() {
-    d3Obj.on("mousemove", null);
+    d3Obj.on("mousemove", null)
 
     d3.select(this)
     .on("mousemove", null)
@@ -262,10 +268,10 @@ function resizeStart(thisObj, xFix, yFix) {
         .attr("d", lineFunction(lineData))
         .attr("style", pathStyle);
 
-    minMouse[0] = Math.min(minMouse[0], m[0]);
-    minMouse[1] = Math.min(minMouse[1], m[1]);
-    maxMouse[0] = Math.max(maxMouse[0], m[0]);
-    maxMouse[1] = Math.max(maxMouse[1], m[1]);
+    viewboxX = Math.min(lineStart.x, lineData[1].x);
+    viewboxY = Math.min(lineStart.y, lineData[1].y);
+    viewboxWidth = Math.abs(lineStart.x - lineData[1].x);
+    viewboxHeight = Math.abs(lineStart.y - lineData[1].y);
     d3Obj.on("mousemove", () => resizeResize(thisObj, fixX, fixY));
 }
 
@@ -277,11 +283,10 @@ function resizeResize(thisObj, fixX, fixY) {
     ];
     draw.attr("d", lineFunction(lineData));
 
-    // pen 기준임. line이나 도형은 시작 끝만 비교해도 됨
-    minMouse[0] = Math.min(minMouse[0], m[0]);
-    minMouse[1] = Math.min(minMouse[1], m[1]);
-    maxMouse[0] = Math.max(maxMouse[0], m[0]);
-    maxMouse[1] = Math.max(maxMouse[1], m[1]);
+    viewboxX = Math.min(lineStart.x, lineData[1].x);
+    viewboxY = Math.min(lineStart.y, lineData[1].y);
+    viewboxWidth = Math.abs(lineStart.x - lineData[1].x);
+    viewboxHeight = Math.abs(lineStart.y - lineData[1].y);
 }
 
 
@@ -327,8 +332,9 @@ function resizeEnd() {
     drawDiv.style.position = "absolute";
 
     const drawSvg = document.createElementNS(svgNS, 'svg');
-    const viewBoxVal = "" + minMouse[0] + " " + minMouse[1] + " " + (maxMouse[0] - minMouse[0]) + " " + (maxMouse[1] - minMouse[1]);
-    const drawSvgStyle = "left:" + minMouse[0] + "px; width: " + (maxMouse[0] - minMouse[0]) + "px; top: " + minMouse[1] + "px; height: " + (maxMouse[1] - minMouse[1]) + "px;" + pathStyle;
+    // x시작 y시작 width height
+    const viewBoxVal = "" + viewboxX + " " + viewboxY + " " + viewboxWidth + " " + viewboxHeight;
+    const drawSvgStyle = "left:" + viewboxX + "px; width: " + viewboxWidth + "px; top: " + viewboxY + "px; height: " + viewboxHeight + "px;" + pathStyle;
     drawSvg.setAttribute("class", "scaledSvg");
     drawSvg.setAttribute("viewBox", viewBoxVal);
     drawSvg.style = drawSvgStyle;
